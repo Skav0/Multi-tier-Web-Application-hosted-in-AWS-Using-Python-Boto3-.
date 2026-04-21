@@ -6,3 +6,10 @@ To see the architecture, look at "Architecture.png" image. We are not going to s
 To know what i did exactly, you can read the comments on "Code.py" file.
 I'll make this script flexible, so you can input your own configuration(like cidr, and names so it's more efficient)
 I made the script flexible, so you can add your own number. And also you can delete the things that you created.
+in the next section i will include what i did exactly so you can understand the flow:
+
+###
+-Created a vpc, and subnets on this vpc.
+Got the vpc id from the response, and filtered the vpc id so i can take it as an input for the subnet creation script.
+
+###
