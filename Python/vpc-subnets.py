@@ -108,6 +108,58 @@ response = client.create_nat_gateway(
 
 #**********************************************************************
 
+#**********************EC2 insatnces**********************************
+
+response = client.run_instances(
+    BlockDeviceMappings=[
+        {
+            'DeviceName': '/dev/sdh',
+            'Ebs': {
+                'VolumeSize': 100,
+            },
+        },
+    ],
+    ImageId='ami-098e39bafa7e7303d',#put the ami that you want
+    InstanceType='t3.micro',
+    KeyName='keytest',#put your key
+    MaxCount=1,
+    MinCount=1,
+    SecurityGroupIds=[
+        rsg1['GroupId'],
+    ],
+    SubnetId=l[0],
+   
+)
+
+response = client.run_instances(
+    BlockDeviceMappings=[
+        {
+            'DeviceName': '/dev/sdh',
+            'Ebs': {
+                'VolumeSize': 100,
+            },
+        },
+    ],
+    ImageId='ami-098e39bafa7e7303d',#put the ami that you want
+    InstanceType='t3.micro',
+    KeyName='keytest',#put your key
+    MaxCount=1,
+    MinCount=1,
+    SecurityGroupIds=[
+        rsg2['GroupId'],
+    ],
+    SubnetId=l[1],
+    UserData='#!/bin/bash\
+dnf install -y git\
+git clone https://github.com/Skav0/Multi-tier-Web-Application-hosted-in-AWS.git \
+dnf install -y httpd\
+systemctl start httpd\
+systemctl enable httpd\
+mkdir /var/www/html/\
+mv /Multi-tier-Web-Application-hosted-in-AWS/index.html /var/www/html'
+   
+)
+
 
 
 
