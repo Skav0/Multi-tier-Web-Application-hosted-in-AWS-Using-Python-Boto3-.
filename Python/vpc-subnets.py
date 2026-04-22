@@ -18,10 +18,10 @@ rvpc = client.create_vpc(
 #After creating the vpc, i used the vpc id in the subnets below, and i included the zones where i can create the subnets.
 
 
-subnets=[{'az':'us-east-1a','cidr':'192.168.10.0/24'},
+subnets=[{'az':'us-east-1b','cidr':'192.168.10.0/24'},
          {'az':'us-east-1a','cidr':'192.168.20.0/24'},
          {'az':'us-east-1b','cidr':'192.168.30.0/24'},
-         {'az':'us-east-1b','cidr':'192.168.40.0/24'}
+         {'az':'us-east-1a','cidr':'192.168.40.0/24'}
          
          
          ]
@@ -60,56 +60,6 @@ rsg2 = client.create_security_group(
 
 
 
-#**********************NAT GWs************************************************
-
-#*****creating EIPs for the NAT GWs***
-
-reip1 = client.allocate_address(
-    Domain='vpc',
-)
-reip2 = client.allocate_address(
-    Domain='vpc',
-)
-#******************************
-
-
-#creating the NAT GWs
-rnatgw1 = client.create_nat_gateway(
-    AllocationId=reip1['AllocationId'],
-    SubnetId=l[2],
-)
-
-rnatgw2 = client.create_nat_gateway(
-    AllocationId=reip2['AllocationId'],
-    SubnetId=l[3],
-)
-
-
-
-nat_gw_ids = [
-    rnatgw1['NatGateway']['NatGatewayId'],
-    rnatgw2['NatGateway']['NatGatewayId']
-]
-
-print("Waiting for NAT Gateways to become available... (This usually takes 2-3 minutes)")
-waiter = client.get_waiter('nat_gateway_available')
-waiter.wait(
-    NatGatewayIds=nat_gw_ids,
-    WaiterConfig={'Delay': 15, 'MaxAttempts': 40}
-)
-print("NAT Gateways are ready! Proceeding to routing...")
-
-
-
-
-
-
-
-
-#**********************************************************************
-
-
-
 
 #**********************routing tables************************************************
 
@@ -143,6 +93,51 @@ response = client.create_route(
     GatewayId=igwrep['InternetGateway']['InternetGatewayId'],
     RouteTableId=rtrep1['RouteTable']['RouteTableId'],
 )
+
+
+
+
+#**********************NAT GWs************************************************
+
+#*****creating EIPs for the NAT GWs***
+reip1 = client.allocate_address(
+    Domain='vpc',
+)
+reip2 = client.allocate_address(
+    Domain='vpc',
+)
+#******************************
+#creating the NAT GWs
+rnatgw1 = client.create_nat_gateway(
+    AllocationId=reip1['AllocationId'],
+    SubnetId=l[2],
+)
+rnatgw2 = client.create_nat_gateway(
+    AllocationId=reip2['AllocationId'],
+    SubnetId=l[3],
+)
+nat_gw_ids = [
+    rnatgw1['NatGateway']['NatGatewayId'],
+    rnatgw2['NatGateway']['NatGatewayId']
+]
+
+print("Waiting for NAT Gateways to become available... (This usually takes 2-3 minutes)")
+waiter = client.get_waiter('nat_gateway_available')
+waiter.wait(
+    NatGatewayIds=nat_gw_ids,
+    WaiterConfig={'Delay': 15, 'MaxAttempts': 40}
+)
+print("NAT Gateways are ready! Proceeding to routing...")
+#**********************************************************************
+
+
+
+
+
+
+
+
+
 #nat gw route(for the 2 private rts)
 response = client.create_route(
     DestinationCidrBlock='0.0.0.0/0',
@@ -215,7 +210,6 @@ response = client.run_instances(
     NetworkInterfaces=[
         {
             'DeviceIndex': 0,
-            'AssociatePublicIpAddress': True,
             'SubnetId': l[0],    # Must be defined here
             'Groups': [rsg1['GroupId']],       # Security Group IDs go here
         }],
@@ -256,7 +250,6 @@ response = client.run_instances(
     NetworkInterfaces=[
         {
             'DeviceIndex': 0,
-            'AssociatePublicIpAddress': True,
             'SubnetId': l[1],    # Must be defined here
             'Groups': [rsg2['GroupId']],       # Security Group IDs go here
         }],
@@ -283,39 +276,35 @@ mv /Multi-tier-Web-Application-hosted-in-AWS/index.html /var/www/html'''
 client = boto3.client('elbv2')
 
 #alb1
-ralb1 = client.create_load_balancer(
-    Listeners=[
-        {
-            'InstancePort': 80,
-            'InstanceProtocol': 'HTTP',
-            'LoadBalancerPort': 80,
-            'Protocol': 'HTTP',
-        },
-    ],
-    LoadBalancerName='alb1',
-    SecurityGroups=[
-        rsg1['GroupId'],
-    ],
+
+
+response = client.create_load_balancer(
+    Name='testingloadbalancer1adam',
     Subnets=[
         l[0],l[1]
     ],
+  
+    SecurityGroups=[
+        rsg1['GroupId'],
+    ],
+    Scheme='internet-facing',
+    
+    Type='application',
+    
 )
 
 #alb2
-ralb2 = client.create_load_balancer(
-    Listeners=[
-        {
-            'InstancePort': 80,
-            'InstanceProtocol': 'HTTP',
-            'LoadBalancerPort': 80,
-            'Protocol': 'HTTP',
-        },
+response = client.create_load_balancer(
+    Name='testingloadbalancer2adam',
+    Subnets=[
+        l[0],l[1]
     ],
-    LoadBalancerName='alb2',
+  
     SecurityGroups=[
         rsg2['GroupId'],
     ],
-    Subnets=[
-        l[1],l[0]
-    ],
+    Scheme='internet-facing',
+    
+    Type='application',
+    
 )
