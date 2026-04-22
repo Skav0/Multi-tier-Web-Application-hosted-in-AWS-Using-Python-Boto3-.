@@ -308,3 +308,28 @@ response = client.create_load_balancer(
     Type='application',
     
 )
+
+
+
+
+
+
+#correct the alb nat pointing instead of igw.
+#******make sure the alb are working fine in the future********
+#create target group for alb1
+ralb1 = client.create_target_group(
+    Name='targetgroup1adam',
+    Port=80,
+    Protocol='HTTP',
+    VpcId=rvpc['Vpc']['VpcId'],
+    TargetType='instance',
+)
+#create target group for alb2
+ralb1 = client.create_target_group(
+    Name='targetgroup2adam',
+    Port=80,
+    Protocol='HTTP',
+    VpcId=rvpc['Vpc']['VpcId'],
+    TargetType='instance',
+)
+#in the future create the asg for the 2 instances
