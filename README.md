@@ -5,4 +5,4 @@ We will follow an architecture that we used in a previous repo to create a the s
 To see the architecture, look at "Architecture.png" image. We are not going to stick to the provided on the image, instead i will use my own naming label.
 To know what i did exactly, you can read the comments on "Code.py" file.
 -For the sake of ease and making the project simple, i fixed the inputs so i can stick to the architecture.
-The code needs debugging and improvement, and i have exam right now. So i will do the in the future(better cause i will gain more knowledge.)
+The code needs debugging and improvement, and i have exam right now. So i will do it the in the future(better cause i will gain more knowledge.)
